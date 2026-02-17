@@ -29,8 +29,9 @@ export function amountToInteger(amount: string): number {
 export function toActualTransaction(
   txn: RedbarkTransaction
 ): ActualTransaction {
-  const absAmount = amountToInteger(txn.amount)
-  const signedAmount = txn.direction === 'debit' ? -absAmount : absAmount
+  // The amount from Redbark is already signed (negative = outflow, positive = inflow).
+  // Actual Budget uses the same convention (negative = payment, positive = deposit).
+  const signedAmount = amountToInteger(txn.amount)
 
   const notes = [txn.category, txn.merchantCategoryCode]
     .filter(Boolean)

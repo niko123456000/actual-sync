@@ -35,13 +35,13 @@ describe('toActualTransaction', () => {
     category: 'groceries',
   }
 
-  it('maps debit transactions as negative amounts', () => {
-    const result = toActualTransaction(baseTxn)
+  it('uses the signed amount directly (negative = outflow)', () => {
+    const result = toActualTransaction({ ...baseTxn, amount: '-12.50' })
     expect(result.amount).toBe(-1250)
   })
 
-  it('maps credit transactions as positive amounts', () => {
-    const result = toActualTransaction({ ...baseTxn, direction: 'credit' })
+  it('uses the signed amount directly (positive = inflow)', () => {
+    const result = toActualTransaction({ ...baseTxn, amount: '12.50' })
     expect(result.amount).toBe(1250)
   })
 
