@@ -196,7 +196,12 @@ export async function withActualBudget<T>(
         return (await api.getAccounts()) as ActualAccount[]
       },
       importTransactions: async (accountId, transactions) => {
-        return (await api.importTransactions(accountId, transactions)) as ImportResult
+        // The API type requires `account` on each transaction object
+        const withAccount = transactions.map((t) => ({
+          ...t,
+          account: accountId,
+        }))
+        return (await api.importTransactions(accountId, withAccount)) as ImportResult
       },
     })
 

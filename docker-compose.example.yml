@@ -1,0 +1,28 @@
+services:
+  redbark-actual-sync:
+    image: ghcr.io/redbark-app/actual-sync:latest
+    # Or build locally:
+    # build: .
+    restart: "no"
+    environment:
+      - REDBARK_API_KEY=rbk_live_your_key_here
+      - ACTUAL_SERVER_URL=http://actual-server:5006
+      - ACTUAL_PASSWORD=your-actual-password
+      - ACTUAL_BUDGET_ID=your-budget-sync-id
+      - ACCOUNT_MAPPING=redbark-acc-id:actual-acc-id
+      - SYNC_DAYS=30
+      - LOG_LEVEL=info
+    volumes:
+      - actual-sync-data:/app/data
+
+  # Optional: include if you also self-host Actual Budget
+  actual-server:
+    image: actualbudget/actual-server:latest
+    ports:
+      - "5006:5006"
+    volumes:
+      - actual-data:/data
+
+volumes:
+  actual-sync-data:
+  actual-data:
