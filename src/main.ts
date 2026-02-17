@@ -104,7 +104,7 @@ EXAMPLES:
   redbark-actual-sync --list-actual-accounts
 
 DOCKER:
-  docker run --rm --env-file .env -v sync-data:/app/data ghcr.io/redbark-app/actual-sync
+  docker run --rm --env-file .env -v sync-data:/app/data ghcr.io/redbark/actual-sync
 `)
 }
 

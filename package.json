@@ -33,7 +33,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/redbark-app/actual-sync"
+    "url": "https://github.com/redbark/actual-sync"
   },
   "keywords": [
     "actual-budget",
