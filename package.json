@@ -1,6 +1,6 @@
 {
   "name": "@redbark/actual-sync",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Sync bank transactions from Redbark to Actual Budget",
   "type": "module",
   "main": "dist/main.cjs",

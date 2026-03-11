@@ -3,7 +3,7 @@
 # and "schema" are present. Each option below appears as a form field there.
 name: Redbark Actual Sync
 description: Sync bank transactions from Redbark to your self-hosted Actual Budget. Runs on a schedule.
-version: "0.1.0"
+version: "0.1.1"
 slug: redbark-actual-sync
 url: https://github.com/redbark-co/actual-sync
 arch:
