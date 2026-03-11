@@ -50,19 +50,6 @@
       color: var(--muted);
       margin: 0 0 0.75rem;
     }
-    textarea {
-      width: 100%;
-      min-height: 120px;
-      padding: 0.75rem;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text);
-      font-family: ui-monospace, monospace;
-      font-size: 0.8125rem;
-      resize: vertical;
-    }
-    textarea::placeholder { color: var(--muted); }
     button {
       background: var(--accent);
       color: var(--bg);
@@ -75,16 +62,7 @@
       margin-top: 0.5rem;
     }
     button:hover { background: var(--accent-hover); }
-    button.secondary {
-      background: var(--surface);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-    button.secondary:hover { background: var(--border); }
-    .pairing {
-      display: none;
-      margin-top: 1rem;
-    }
+    .pairing { display: none; }
     .pairing.visible { display: block; }
     .two-cols {
       display: grid;
@@ -122,7 +100,7 @@
       border-bottom: 1px solid var(--border);
     }
     .row:last-child { border-bottom: none; }
-    .row label { font-size: 0.875rem; }
+    .row .label { font-size: 0.875rem; }
     .row .inst { font-size: 0.75rem; color: var(--muted); }
     select {
       padding: 0.35rem 0.5rem;
@@ -144,123 +122,103 @@
       word-break: break-all;
       margin-top: 0.5rem;
     }
-    .error { color: #f87171; font-size: 0.875rem; margin-top: 0.5rem; }
+    .loading { color: var(--muted); }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Account mapping</h1>
-    <p class="subtitle">Pair Redbark accounts with Actual Budget accounts, then copy the mapping into your config or add-on.</p>
+    <p class="subtitle">Pair Redbark accounts with Actual Budget accounts, then copy the mapping into the add-on Configuration.</p>
 
-    <div class="step" id="stepExport">
-      <h2>1. Export account data</h2>
-      <p style="margin:0 0 0.5rem; font-size:0.875rem;">With a <code style="background:var(--bg);padding:0.15rem 0.35rem;border-radius:4px;">.env</code> set, run one of:</p>
-      <pre style="margin:0; font-size:0.8125rem; color:var(--muted); overflow-x:auto;">./scripts/setup-account-ids.sh --export</pre>
-      <p style="margin:0.25rem 0 0; font-size:0.8125rem;">or from repo: <code style="background:var(--bg);padding:0.15rem 0.35rem;border-radius:4px;">pnpm dev -- --export-accounts</code></p>
-      <p style="margin:0.25rem 0 0; font-size:0.8125rem;">or Docker: <code style="background:var(--bg);padding:0.15rem 0.35rem;border-radius:4px;">docker run --rm --env-file .env -v actual-sync-data:/app/data &lt;image&gt; --export-accounts</code></p>
-      <p style="margin:0.75rem 0 0; font-size:0.875rem;">Copy the full JSON output, then paste it below. Or open this page from the add-on Web UI to load from your config.</p>
+    <div class="step" id="stepLoading">
+      <p class="loading">Loading accounts from add-on…</p>
     </div>
 
-    <div class="step" id="stepPaste">
-      <h2>2. Paste JSON</h2>
-      <textarea id="jsonInput" placeholder='{"redbarkAccounts":[...],"actualAccounts":[...]}'></textarea>
-      <div id="parseError" class="error" style="display:none;"></div>
-      <button type="button" id="loadBtn">Load accounts</button>
+    <div class="step" id="stepNoAccounts" style="display:none;">
+      <h2>No accounts loaded</h2>
+      <p style="margin:0; font-size:0.875rem;">Add your <strong>Redbark API key</strong> and <strong>Actual server URL</strong>, <strong>password</strong>, and <strong>budget ID</strong> in the add-on Configuration, then restart the add-on. Account lists are retrieved from the Redbark and Actual APIs when you open this page.</p>
     </div>
 
     <div class="step pairing" id="pairingStep">
-      <h2>3. Pair accounts</h2>
+      <h2>1. Account lists</h2>
+      <p style="margin:0 0 0.75rem; font-size:0.875rem;">Accounts from Redbark and Actual Budget. Map each Redbark account to an Actual account below.</p>
+      <div class="two-cols" style="margin-bottom:1.25rem;">
+        <div class="col">
+          <h3>Redbark accounts</h3>
+          <ul class="account-list" id="redbarkList"></ul>
+        </div>
+        <div class="col">
+          <h3>Actual Budget accounts</h3>
+          <ul class="account-list" id="actualList"></ul>
+        </div>
+      </div>
+      <h2 style="margin-top:0;">2. Map Redbark → Actual</h2>
       <p style="margin:0 0 0.75rem; font-size:0.875rem;">For each Redbark account, choose the matching Actual Budget account.</p>
       <div id="pairingRows"></div>
     </div>
 
     <div class="step output-step" id="outputStep" style="display:none;">
-      <h2>4. Copy mapping</h2>
-      <p style="margin:0 0 0.5rem; font-size:0.875rem;">Paste this into <strong>Account mapping</strong> in your config or Home Assistant add-on Configuration.</p>
+      <h2>3. Copy mapping string</h2>
+      <p style="margin:0 0 0.5rem; font-size:0.875rem;">Paste this into <strong>Account mapping</strong> in the add-on Configuration.</p>
       <div class="output-box" id="outputBox"></div>
       <button type="button" id="copyBtn">Copy to clipboard</button>
     </div>
   </div>
 
   <script>
-    const jsonInput = document.getElementById('jsonInput');
-    const loadBtn = document.getElementById('loadBtn');
-    const parseError = document.getElementById('parseError');
+    const stepLoading = document.getElementById('stepLoading');
+    const stepNoAccounts = document.getElementById('stepNoAccounts');
     const pairingStep = document.getElementById('pairingStep');
     const pairingRows = document.getElementById('pairingRows');
     const outputStep = document.getElementById('outputStep');
     const outputBox = document.getElementById('outputBox');
     const copyBtn = document.getElementById('copyBtn');
-    const stepExport = document.getElementById('stepExport');
-    const stepPaste = document.getElementById('stepPaste');
+    const redbarkListEl = document.getElementById('redbarkList');
+    const actualListEl = document.getElementById('actualList');
 
     let state = { redbarkAccounts: [], actualAccounts: [] };
 
-    // When opened from the add-on (ingress), load accounts from API
-    fetch('./api/accounts').then(r => {
-      if (!r.ok) throw new Error(r.status);
-      return r.json();
-    }).then(data => {
-      if (!Array.isArray(data.redbarkAccounts) || !Array.isArray(data.actualAccounts)) return;
-      state.redbarkAccounts = data.redbarkAccounts;
-      state.actualAccounts = data.actualAccounts;
-      renderPairing();
-      pairingStep.classList.add('visible');
-      outputStep.style.display = 'none';
-      stepExport.style.display = 'none';
-      stepPaste.style.display = 'none';
-      document.querySelector('.subtitle').textContent = 'Pair Redbark accounts with Actual Budget accounts, then copy the mapping into the add-on Configuration.';
-    }).catch(() => {});
-
-    function extractJson(raw) {
-      const trimmed = raw.trim();
-      let data;
-      try {
-        data = JSON.parse(trimmed);
-      } catch (_) {
-        const lastBrace = trimmed.lastIndexOf('{');
-        if (lastBrace >= 0) {
-          data = JSON.parse(trimmed.slice(lastBrace));
-        } else {
-          throw new Error('No valid JSON found. Paste the full --export-accounts output.');
-        }
-      }
-      return data;
-    }
-
-    loadBtn.addEventListener('click', () => {
-      parseError.style.display = 'none';
-      try {
-        const raw = jsonInput.value.trim();
-        if (!raw) {
-          parseError.textContent = 'Paste JSON first.';
-          parseError.style.display = 'block';
-          return;
-        }
-        const data = extractJson(raw);
+    fetch('./api/accounts')
+      .then(r => {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      })
+      .then(data => {
+        stepLoading.style.display = 'none';
         if (!Array.isArray(data.redbarkAccounts) || !Array.isArray(data.actualAccounts)) {
-          throw new Error('JSON must have redbarkAccounts and actualAccounts arrays');
+          stepNoAccounts.style.display = 'block';
+          return;
         }
         state.redbarkAccounts = data.redbarkAccounts;
         state.actualAccounts = data.actualAccounts;
+        if (state.redbarkAccounts.length === 0 && state.actualAccounts.length === 0) {
+          stepNoAccounts.style.display = 'block';
+          return;
+        }
         renderPairing();
         pairingStep.classList.add('visible');
-        outputStep.style.display = 'none';
-      } catch (e) {
-        parseError.textContent = e.message || 'Invalid JSON';
-        parseError.style.display = 'block';
-      }
-    });
+      })
+      .catch(() => {
+        stepLoading.style.display = 'none';
+        stepNoAccounts.style.display = 'block';
+      });
 
     function renderPairing() {
+      redbarkListEl.innerHTML = state.redbarkAccounts.length
+        ? state.redbarkAccounts.map(rb => `<li><strong>${escapeHtml(rb.name)}</strong> <span class="inst">${escapeHtml(rb.institutionName || '')}</span> <code style="font-size:0.7rem;color:var(--muted)">${escapeHtml(rb.id)}</code></li>`).join('')
+        : '<li class="inst">No Redbark accounts. Add API key in Configuration and restart.</li>';
+      actualListEl.innerHTML = state.actualAccounts.length
+        ? state.actualAccounts.map(a => `<li><strong>${escapeHtml(a.name)}</strong>${a.offbudget ? ' <span class="inst">off-budget</span>' : ''} <code style="font-size:0.7rem;color:var(--muted)">${escapeHtml(a.id)}</code></li>`).join('')
+        : '<li class="inst">No Actual accounts. Set server URL, password, and budget ID in Configuration and restart.</li>';
+
       pairingRows.innerHTML = '';
-      state.redbarkAccounts.forEach((rb, i) => {
+      state.redbarkAccounts.forEach((rb) => {
         const row = document.createElement('div');
         row.className = 'row';
         row.innerHTML = `
           <div>
             <div class="label">${escapeHtml(rb.name)}</div>
-            <div class="inst">${escapeHtml(rb.institutionName)}</div>
+            <div class="inst">${escapeHtml(rb.institutionName || '')}</div>
           </div>
           <select data-redbark-id="${escapeHtml(rb.id)}">
             <option value="">— Select Actual account —</option>

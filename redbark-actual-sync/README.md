@@ -4,7 +4,7 @@ Run [Redbark Actual Sync](https://github.com/redbark-co/actual-sync) as a Home A
 
 All settings (Redbark API key, Actual server URL, account mapping, etc.) are presented on the add-on’s **Configuration** tab in Home Assistant. After installing the add-on, open it and go to the **Configuration** tab to enter your values; no environment variables or YAML are required.
 
-**Web UI (ingress):** When the add-on is running, use **Open Web UI** (or the add-on’s **Web UI** link) to open the account-mapping page in your browser. It loads your Redbark and Actual accounts from the add-on and lets you pair them with dropdowns; then copy the generated mapping string into **Configuration → Account mapping** and save.
+**Web UI (ingress):** When the add-on is running, use **Open Web UI** to open the account-mapping page. The page retrieves your Redbark and Actual account lists from the APIs (no pasting). Pair each Redbark account to an Actual account with the dropdowns, then copy the mapping string into **Configuration → Account mapping** and save.
 
 **First-time setup (no Docker needed):** If you add your Redbark API key and Actual server URL, password, and budget ID but leave **Account mapping** empty, the add-on will list your Redbark and Actual account IDs in the **Log** tab when it starts. Copy those IDs into **Account mapping** as `redbark_id:actual_id` pairs (comma-separated), then restart the add-on. If you see an error under "Actual Budget accounts" (e.g. `navigator is not defined`) instead of account names, update the add-on to the latest version and reinstall so the add-on includes the navigator polyfill.
 
@@ -39,11 +39,11 @@ Configure the add-on in **Settings → Add-ons → Redbark Actual Sync → Confi
 | **Actual encryption password** | No | — | E2E encryption password if your Actual budget uses it. |
 | **Dry run** | No | false | If true, only previews imports and does not write to Actual. |
 
-## Finding IDs
+## Finding IDs / building the mapping
 
-**Easiest:** Start the add-on with Redbark and Actual credentials (and budget ID) set in Configuration, then open **Open Web UI**. The account-mapping page will fetch your accounts and let you build the mapping with dropdowns; copy the result into **Account mapping** and save.
+**Recommended:** Set Redbark API key and Actual server URL, password, and budget ID in Configuration, start the add-on, then open **Open Web UI**. The page loads account lists from the Redbark and Actual APIs, shows them side by side, and lets you choose which Redbark account maps to which Actual account. Copy the generated mapping string into **Account mapping** and save.
 
-**Alternative (CLI):** Before filling the **Account mapping** field, you need Redbark and Actual account IDs. From a machine with Docker and this repo (or the main [README](https://github.com/redbark-co/actual-sync#2-find-your-account-ids)):
+**Alternative (CLI):** From a machine with Docker and this repo you can list account IDs in the terminal (see main [README](https://github.com/redbark-co/actual-sync#2-find-your-account-ids)):
 
 1. Create a `.env` with `REDBARK_API_KEY` and (for Actual) `ACTUAL_SERVER_URL`, `ACTUAL_PASSWORD`, `ACTUAL_BUDGET_ID`.
 2. Run the setup script: `./scripts/setup-account-ids.sh` — it runs `--list-redbark-accounts` and `--list-actual-accounts` and prints the IDs to copy into the add-on **Account mapping** field.
