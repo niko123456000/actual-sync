@@ -2,9 +2,11 @@
 
 This document is for maintainers who want to keep the Home Assistant add-on in sync with the original [Redbark Actual Sync](https://github.com/redbark-co/actual-sync) project.
 
-## Version bump (required for add-on store updates)
+## Version bump (required for every release)
 
-**Always bump the version** when you make user-facing or fix changes so the Home Assistant add-on store can offer an update. Update these three places to the same version (e.g. `0.1.4` → `0.1.5`):
+**Every push that ships changes must include a version bump.** No exceptions. If you add a feature, fix a bug, or change the add-on or Web UI, bump the version first so the Home Assistant add-on store can offer an update.
+
+Update these three places to the same new version (e.g. `0.1.9` → `0.1.10`):
 
 1. **`package.json`** — `"version": "x.y.z"`
 2. **`redbark-actual-sync/config.yaml`** — `version: "x.y.z"`
