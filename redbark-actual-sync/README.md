@@ -37,8 +37,12 @@ Configure the add-on in **Settings → Add-ons → Redbark Actual Sync → Confi
 
 ## Finding IDs
 
-- **Redbark account IDs**: Redbark dashboard or run the sync once and check logs; you can also run the container once with `--list-redbark-accounts` (see main repo README).
-- **Actual account IDs**: In the Actual web UI, open an account; the URL often contains the account ID, or run the main app with `--list-actual-accounts`.
+Before filling the **Account mapping** field, you need Redbark and Actual account IDs. From a machine with Docker and this repo (or the main [README](https://github.com/redbark-co/actual-sync#2-find-your-account-ids)):
+
+1. Create a `.env` with `REDBARK_API_KEY` and (for Actual) `ACTUAL_SERVER_URL`, `ACTUAL_PASSWORD`, `ACTUAL_BUDGET_ID`.
+2. Run the setup script: `./scripts/setup-account-ids.sh` — it runs `--list-redbark-accounts` and `--list-actual-accounts` and prints the IDs to copy into the add-on **Account mapping** field.
+
+Alternatively, run the same Docker commands manually (see main repo README) or get IDs from the Redbark dashboard and the Actual account URL in the web UI.
 
 ## Network
 

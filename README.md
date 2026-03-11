@@ -23,6 +23,17 @@ Supports all Redbark banking providers: Fiskil (AU), Akahu (NZ), SnapTrade (glob
 
 ### 2. Find Your Account IDs
 
+Create a `.env` with at least `REDBARK_API_KEY` (and for Actual: `ACTUAL_SERVER_URL`, `ACTUAL_PASSWORD`, `ACTUAL_BUDGET_ID`), then run the setup script to list IDs:
+
+```bash
+# From the repo root (or clone). Uses .env in current directory.
+./scripts/setup-account-ids.sh
+```
+
+Options: `./scripts/setup-account-ids.sh path/to.env`, `--redbark-only`, or `--actual-only`. The script runs the Docker commands below under the hood.
+
+**Or run Docker manually:**
+
 ```bash
 # List your Redbark accounts
 docker run --rm \
