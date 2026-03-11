@@ -136,7 +136,8 @@
 
     <div class="step" id="stepNoAccounts" style="display:none;">
       <h2>No accounts loaded</h2>
-      <p style="margin:0; font-size:0.875rem;">Add your <strong>Redbark API key</strong> and <strong>Actual server URL</strong>, <strong>password</strong>, and <strong>budget ID</strong> in the add-on Configuration, then restart the add-on. Account lists are retrieved from the Redbark and Actual APIs when you open this page.</p>
+      <p style="margin:0; font-size:0.875rem;" id="noAccountsMessage">Add your <strong>Redbark API key</strong> and <strong>Actual server URL</strong>, <strong>password</strong>, and <strong>budget ID</strong> in the add-on Configuration, then restart the add-on. Account lists are retrieved from the Redbark and Actual APIs when you open this page.</p>
+      <pre id="noAccountsError" class="loading" style="display:none; margin:0.75rem 0 0; font-size:0.75rem; white-space:pre-wrap; word-break:break-all;"></pre>
     </div>
 
     <div class="step pairing" id="pairingStep">
@@ -178,29 +179,56 @@
 
     let state = { redbarkAccounts: [], actualAccounts: [] };
 
+    const noAccountsMessage = document.getElementById('noAccountsMessage');
+    const noAccountsError = document.getElementById('noAccountsError');
+
+    function showNoAccounts(apiError) {
+      stepLoading.style.display = 'none';
+      stepNoAccounts.style.display = 'block';
+      noAccountsMessage.innerHTML = apiError
+        ? 'The add-on could not load account lists. See details below and check the add-on <strong>Log</strong> tab.'
+        : 'Add your <strong>Redbark API key</strong> and <strong>Actual server URL</strong>, <strong>password</strong>, and <strong>budget ID</strong> in the add-on Configuration, then restart the add-on. Account lists are retrieved from the Redbark and Actual APIs when you open this page.';
+      if (apiError) {
+        noAccountsError.textContent = apiError;
+        noAccountsError.style.display = 'block';
+      } else {
+        noAccountsError.style.display = 'none';
+      }
+    }
+
     fetch('./api/accounts')
-      .then(r => {
-        if (!r.ok) throw new Error(r.status);
-        return r.json();
+      .then(async (r) => {
+        const text = await r.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (_) {
+          data = !r.ok ? { error: `HTTP ${r.status}`, details: text.slice(0, 500) } : null;
+        }
+        return { ok: r.ok, data: data || {} };
       })
-      .then(data => {
+      .then(({ ok, data }) => {
+        if (!ok) {
+          const msg = data?.error ? (data.details ? `${data.error}\n${data.details}` : data.error) : (data?.message || 'Request failed');
+          showNoAccounts(msg);
+          return;
+        }
         stepLoading.style.display = 'none';
         if (!Array.isArray(data.redbarkAccounts) || !Array.isArray(data.actualAccounts)) {
-          stepNoAccounts.style.display = 'block';
+          showNoAccounts(null);
           return;
         }
         state.redbarkAccounts = data.redbarkAccounts;
         state.actualAccounts = data.actualAccounts;
         if (state.redbarkAccounts.length === 0 && state.actualAccounts.length === 0) {
-          stepNoAccounts.style.display = 'block';
+          showNoAccounts(null);
           return;
         }
         renderPairing();
         pairingStep.classList.add('visible');
       })
-      .catch(() => {
-        stepLoading.style.display = 'none';
-        stepNoAccounts.style.display = 'block';
+      .catch((err) => {
+        showNoAccounts(err.message || 'Network error. Is the add-on running?');
       });
 
     function renderPairing() {
