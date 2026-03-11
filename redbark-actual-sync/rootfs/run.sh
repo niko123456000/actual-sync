@@ -25,6 +25,26 @@ export ACTUAL_DATA_DIR=/data/actual-cache
 : "${SYNC_INTERVAL_HOURS:=6}"
 INTERVAL_SECS=$((SYNC_INTERVAL_HOURS * 3600))
 
+# On first start, if account mapping is empty but we have credentials, list account IDs
+# so the user can copy them from the Log tab into Configuration → Account mapping.
+if [ -z "${ACCOUNT_MAPPING:-}" ]; then
+  echo "Account mapping is empty. Listing account IDs (see below) so you can copy them into Configuration."
+  if [ -n "$REDBARK_API_KEY" ]; then
+    echo "--- Redbark accounts ---"
+    node /app/main.cjs --list-redbark-accounts || true
+  else
+    echo "Add your Redbark API key in Configuration to list Redbark account IDs."
+  fi
+  if [ -n "$ACTUAL_SERVER_URL" ] && [ -n "$ACTUAL_PASSWORD" ] && [ -n "$ACTUAL_BUDGET_ID" ]; then
+    echo "--- Actual Budget accounts ---"
+    node /app/main.cjs --list-actual-accounts || true
+  else
+    echo "Add Actual server URL, password, and budget ID in Configuration to list Actual account IDs."
+  fi
+  echo "Copy the IDs above into Configuration → Account mapping (redbark_id:actual_id, ...), then restart the add-on."
+  echo ""
+fi
+
 echo "Redbark Actual Sync add-on started. Syncing every ${SYNC_INTERVAL_HOURS}h (${INTERVAL_SECS}s)."
 
 while true; do

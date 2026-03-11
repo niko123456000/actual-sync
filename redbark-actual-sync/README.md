@@ -4,6 +4,8 @@ Run [Redbark Actual Sync](https://github.com/redbark-co/actual-sync) as a Home A
 
 All settings (Redbark API key, Actual server URL, account mapping, etc.) are presented on the add-on’s **Configuration** tab in Home Assistant. After installing the add-on, open it and go to the **Configuration** tab to enter your values; no environment variables or YAML are required.
 
+**First-time setup:** If you add your Redbark API key (and optionally Actual server URL, password, and budget ID) but leave **Account mapping** empty, the add-on will list your Redbark and Actual account IDs in the **Log** tab when it starts. Copy those IDs into **Account mapping** as `redbark_id:actual_id` pairs (comma-separated), then restart the add-on.
+
 ## Installation
 
 ### Add this repository
