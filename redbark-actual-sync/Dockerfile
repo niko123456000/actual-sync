@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends jq && rm -rf /v
 
 COPY rootfs/polyfill-navigator.cjs /polyfill-navigator.cjs
 COPY rootfs/run.sh /run.sh
+COPY rootfs/web-server.cjs /app/web-server.cjs
+COPY rootfs/www/ /app/www/
 RUN chmod +x /run.sh
 
 ENTRYPOINT ["/run.sh"]

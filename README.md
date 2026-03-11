@@ -112,12 +112,15 @@ ACCOUNT_MAPPING=<redbark_id>:<actual_id>,<redbark_id>:<actual_id>
 - **Redbark**: Run `--list-redbark-accounts` or check the Redbark dashboard
 - **Actual**: Run `--list-actual-accounts` or copy the UUID from the account URL in Actual's web UI
 
+**Account mapping helper:** Run `./scripts/setup-account-ids.sh --export` (or `pnpm dev -- --export-accounts`), then open **`web/account-mapping.html`** in a browser. Paste the JSON, pair Redbark → Actual accounts, and copy the mapping string into your config.
+
 ### CLI Flags
 
 | Flag | Description |
 |------|-------------|
 | `--list-redbark-accounts` | List Redbark accounts and their IDs |
 | `--list-actual-accounts` | List Actual Budget accounts and their IDs |
+| `--export-accounts` | Output both as JSON for `web/account-mapping.html` |
 | `--dry-run` | Preview what would be imported without writing |
 | `--days <n>` | Override number of days to sync |
 | `--help` | Show help message |

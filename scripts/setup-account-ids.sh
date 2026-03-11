@@ -7,6 +7,7 @@
 #   ./scripts/setup-account-ids.sh path/to.env
 #   ./scripts/setup-account-ids.sh --redbark-only
 #   ./scripts/setup-account-ids.sh --actual-only
+#   ./scripts/setup-account-ids.sh --export         # JSON for web/account-mapping.html
 #
 # For Redbark you need: REDBARK_API_KEY
 # For Actual you need:  ACTUAL_SERVER_URL, ACTUAL_PASSWORD, ACTUAL_BUDGET_ID
@@ -17,6 +18,7 @@ IMAGE="${ACTUAL_SYNC_IMAGE:-ghcr.io/redbark-co/actual-sync:latest}"
 ENV_FILE="${1:-.env}"
 REDBARK_ONLY=false
 ACTUAL_ONLY=false
+EXPORT_JSON=false
 
 if [[ "$1" == "--redbark-only" ]]; then
   REDBARK_ONLY=true
@@ -24,8 +26,11 @@ if [[ "$1" == "--redbark-only" ]]; then
 elif [[ "$1" == "--actual-only" ]]; then
   ACTUAL_ONLY=true
   ENV_FILE="${2:-.env}"
+elif [[ "$1" == "--export" ]]; then
+  EXPORT_JSON=true
+  ENV_FILE="${2:-.env}"
 elif [[ "$1" == "--help" || "$1" == "-h" ]]; then
-  head -20 "$0" | tail -18
+  head -22 "$0" | tail -20
   exit 0
 fi
 
@@ -71,7 +76,28 @@ run_actual() {
   echo "--- end Actual ---"
 }
 
-if [[ "$REDBARK_ONLY" == true ]]; then
+run_export() {
+  for v in REDBARK_API_KEY ACTUAL_SERVER_URL ACTUAL_PASSWORD ACTUAL_BUDGET_ID; do
+    if [[ -z "${!v:-}" ]]; then
+      echo "ERROR: $v is not set. Set it in $ENV_FILE for --export." >&2
+      exit 1
+    fi
+  done
+  docker run --rm \
+    -e REDBARK_API_KEY="$REDBARK_API_KEY" \
+    -e "REDBARK_API_URL=${REDBARK_API_URL:-https://app.redbark.co}" \
+    -e ACTUAL_SERVER_URL="$ACTUAL_SERVER_URL" \
+    -e ACTUAL_PASSWORD="$ACTUAL_PASSWORD" \
+    -e ACTUAL_BUDGET_ID="$ACTUAL_BUDGET_ID" \
+    ${ACTUAL_ENCRYPTION_PASSWORD:+ -e ACTUAL_ENCRYPTION_PASSWORD="$ACTUAL_ENCRYPTION_PASSWORD"} \
+    -v actual-sync-setup-data:/app/data \
+    "$IMAGE" \
+    --export-accounts
+}
+
+if [[ "$EXPORT_JSON" == true ]]; then
+  run_export
+elif [[ "$REDBARK_ONLY" == true ]]; then
   run_redbark
 elif [[ "$ACTUAL_ONLY" == true ]]; then
   run_actual
@@ -83,4 +109,5 @@ else
   echo "Next: set ACCOUNT_MAPPING to redbark_id:actual_id pairs (comma-separated),"
   echo "e.g. ACCOUNT_MAPPING=rbk-abc:actual-uuid-1,rbk-def:actual-uuid-2"
   echo "For the Home Assistant add-on, put the same value in the Configuration tab."
+  echo "Or run --export and paste the JSON into web/account-mapping.html to build the mapping."
 fi

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Account mapping · Redbark Actual Sync</title>
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --border: #2a2a2a;
+      --text: #e5e5e5;
+      --muted: #737373;
+      --accent: #22c55e;
+      --accent-hover: #16a34a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 1.5rem;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.875rem;
+      margin-bottom: 1.5rem;
+    }
+    .step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .step h2 {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin: 0 0 0.75rem;
+    }
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: ui-monospace, monospace;
+      font-size: 0.8125rem;
+      resize: vertical;
+    }
+    textarea::placeholder { color: var(--muted); }
+    button {
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    button:hover { background: var(--accent-hover); }
+    button.secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    button.secondary:hover { background: var(--border); }
+    .pairing {
+      display: none;
+      margin-top: 1rem;
+    }
+    .pairing.visible { display: block; }
+    .two-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+    @media (max-width: 640px) {
+      .two-cols { grid-template-columns: 1fr; }
+    }
+    .col h3 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+      color: var(--muted);
+    }
+    .account-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .account-list li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.875rem;
+    }
+    .account-list li:last-child { border-bottom: none; }
+    .account-list .inst { font-size: 0.75rem; color: var(--muted); }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .row:last-child { border-bottom: none; }
+    .row label { font-size: 0.875rem; }
+    .row .inst { font-size: 0.75rem; color: var(--muted); }
+    select {
+      padding: 0.35rem 0.5rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-size: 0.8125rem;
+      min-width: 180px;
+    }
+    .output-step { margin-top: 1.5rem; }
+    .output-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      font-family: ui-monospace, monospace;
+      font-size: 0.75rem;
+      word-break: break-all;
+      margin-top: 0.5rem;
+    }
+    .error { color: #f87171; font-size: 0.875rem; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Account mapping</h1>
+    <p class="subtitle">Pair Redbark accounts with Actual Budget accounts, then copy the mapping into your config or add-on.</p>
+
+    <div class="step" id="stepExport">
+      <h2>1. Export account data</h2>
+      <p style="margin:0 0 0.5rem; font-size:0.875rem;">With a <code style="background:var(--bg);padding:0.15rem 0.35rem;border-radius:4px;">.env</code> set, run one of:</p>
+      <pre style="margin:0; font-size:0.8125rem; color:var(--muted); overflow-x:auto;">./scripts/setup-account-ids.sh --export</pre>
+      <p style="margin:0.25rem 0 0; font-size:0.8125rem;">or from repo: <code style="background:var(--bg);padding:0.15rem 0.35rem;border-radius:4px;">pnpm dev -- --export-accounts</code></p>
+      <p style="margin:0.25rem 0 0; font-size:0.8125rem;">or Docker: <code style="background:var(--bg);padding:0.15rem 0.35rem;border-radius:4px;">docker run --rm --env-file .env -v actual-sync-data:/app/data &lt;image&gt; --export-accounts</code></p>
+      <p style="margin:0.75rem 0 0; font-size:0.875rem;">Copy the full JSON output, then paste it below. Or open this page from the add-on Web UI to load from your config.</p>
+    </div>
+
+    <div class="step" id="stepPaste">
+      <h2>2. Paste JSON</h2>
+      <textarea id="jsonInput" placeholder='{"redbarkAccounts":[...],"actualAccounts":[...]}'></textarea>
+      <div id="parseError" class="error" style="display:none;"></div>
+      <button type="button" id="loadBtn">Load accounts</button>
+    </div>
+
+    <div class="step pairing" id="pairingStep">
+      <h2>3. Pair accounts</h2>
+      <p style="margin:0 0 0.75rem; font-size:0.875rem;">For each Redbark account, choose the matching Actual Budget account.</p>
+      <div id="pairingRows"></div>
+    </div>
+
+    <div class="step output-step" id="outputStep" style="display:none;">
+      <h2>4. Copy mapping</h2>
+      <p style="margin:0 0 0.5rem; font-size:0.875rem;">Paste this into <strong>Account mapping</strong> in your config or Home Assistant add-on Configuration.</p>
+      <div class="output-box" id="outputBox"></div>
+      <button type="button" id="copyBtn">Copy to clipboard</button>
+    </div>
+  </div>
+
+  <script>
+    const jsonInput = document.getElementById('jsonInput');
+    const loadBtn = document.getElementById('loadBtn');
+    const parseError = document.getElementById('parseError');
+    const pairingStep = document.getElementById('pairingStep');
+    const pairingRows = document.getElementById('pairingRows');
+    const outputStep = document.getElementById('outputStep');
+    const outputBox = document.getElementById('outputBox');
+    const copyBtn = document.getElementById('copyBtn');
+    const stepExport = document.getElementById('stepExport');
+    const stepPaste = document.getElementById('stepPaste');
+
+    let state = { redbarkAccounts: [], actualAccounts: [] };
+
+    // When opened from the add-on (ingress), load accounts from API
+    fetch('./api/accounts').then(r => {
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    }).then(data => {
+      if (!Array.isArray(data.redbarkAccounts) || !Array.isArray(data.actualAccounts)) return;
+      state.redbarkAccounts = data.redbarkAccounts;
+      state.actualAccounts = data.actualAccounts;
+      renderPairing();
+      pairingStep.classList.add('visible');
+      outputStep.style.display = 'none';
+      stepExport.style.display = 'none';
+      stepPaste.style.display = 'none';
+      document.querySelector('.subtitle').textContent = 'Pair Redbark accounts with Actual Budget accounts, then copy the mapping into the add-on Configuration.';
+    }).catch(() => {});
+
+    function extractJson(raw) {
+      const trimmed = raw.trim();
+      let data;
+      try {
+        data = JSON.parse(trimmed);
+      } catch (_) {
+        const lastBrace = trimmed.lastIndexOf('{');
+        if (lastBrace >= 0) {
+          data = JSON.parse(trimmed.slice(lastBrace));
+        } else {
+          throw new Error('No valid JSON found. Paste the full --export-accounts output.');
+        }
+      }
+      return data;
+    }
+
+    loadBtn.addEventListener('click', () => {
+      parseError.style.display = 'none';
+      try {
+        const raw = jsonInput.value.trim();
+        if (!raw) {
+          parseError.textContent = 'Paste JSON first.';
+          parseError.style.display = 'block';
+          return;
+        }
+        const data = extractJson(raw);
+        if (!Array.isArray(data.redbarkAccounts) || !Array.isArray(data.actualAccounts)) {
+          throw new Error('JSON must have redbarkAccounts and actualAccounts arrays');
+        }
+        state.redbarkAccounts = data.redbarkAccounts;
+        state.actualAccounts = data.actualAccounts;
+        renderPairing();
+        pairingStep.classList.add('visible');
+        outputStep.style.display = 'none';
+      } catch (e) {
+        parseError.textContent = e.message || 'Invalid JSON';
+        parseError.style.display = 'block';
+      }
+    });
+
+    function renderPairing() {
+      pairingRows.innerHTML = '';
+      state.redbarkAccounts.forEach((rb, i) => {
+        const row = document.createElement('div');
+        row.className = 'row';
+        row.innerHTML = `
+          <div>
+            <div class="label">${escapeHtml(rb.name)}</div>
+            <div class="inst">${escapeHtml(rb.institutionName)}</div>
+          </div>
+          <select data-redbark-id="${escapeHtml(rb.id)}">
+            <option value="">— Select Actual account —</option>
+            ${state.actualAccounts.map(a => `
+              <option value="${escapeHtml(a.id)}">${escapeHtml(a.name)}${a.offbudget ? ' [off-budget]' : ''}</option>
+            `).join('')}
+          </select>
+        `;
+        row.querySelector('select').addEventListener('change', updateOutput);
+        pairingRows.appendChild(row);
+      });
+      updateOutput();
+    }
+
+    function updateOutput() {
+      const pairs = [];
+      pairingRows.querySelectorAll('select').forEach(sel => {
+        const redbarkId = sel.dataset.redbarkId;
+        const actualId = sel.value.trim();
+        if (actualId) pairs.push(redbarkId + ':' + actualId);
+      });
+      const str = pairs.join(',');
+      outputBox.textContent = str || '(select at least one pair)';
+      outputStep.style.display = str ? 'block' : 'none';
+    }
+
+    copyBtn.addEventListener('click', () => {
+      const text = outputBox.textContent;
+      if (!text || text.startsWith('(')) return;
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy to clipboard'; }, 1500);
+      });
+    });
+
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

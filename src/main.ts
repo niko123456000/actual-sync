@@ -14,6 +14,7 @@ const EXIT_CONNECTION_ERROR = 3
 interface CliFlags {
   listRedbarkAccounts: boolean
   listActualAccounts: boolean
+  exportAccounts: boolean
   dryRun: boolean
   days?: number
   help: boolean
@@ -23,6 +24,7 @@ function parseArgs(argv: string[]): CliFlags {
   const flags: CliFlags = {
     listRedbarkAccounts: false,
     listActualAccounts: false,
+    exportAccounts: false,
     dryRun: false,
     help: false,
   }
@@ -35,6 +37,9 @@ function parseArgs(argv: string[]): CliFlags {
         break
       case '--list-actual-accounts':
         flags.listActualAccounts = true
+        break
+      case '--export-accounts':
+        flags.exportAccounts = true
         break
       case '--dry-run':
         flags.dryRun = true
@@ -73,6 +78,7 @@ USAGE:
 OPTIONS:
   --list-redbark-accounts   List Redbark accounts (to find IDs for mapping)
   --list-actual-accounts    List Actual Budget accounts (to find IDs for mapping)
+  --export-accounts         Output Redbark + Actual accounts as JSON (for setup UI)
   --dry-run                 Preview what would be imported without writing
   --days <number>           Number of days to sync (default: 30)
   --help, -h                Show this help message
@@ -170,6 +176,64 @@ async function handleListActualAccounts(): Promise<void> {
   console.log()
 }
 
+/** JSON shape for the account mapping setup UI */
+interface ExportAccountsPayload {
+  redbarkAccounts: Array<{ id: string; name: string; institutionName: string }>
+  actualAccounts: Array<{ id: string; name: string; offbudget?: boolean }>
+}
+
+async function handleExportAccounts(): Promise<void> {
+  const apiKey = process.env.REDBARK_API_KEY
+  const apiUrl = process.env.REDBARK_API_URL || 'https://app.redbark.co'
+  const serverUrl = process.env.ACTUAL_SERVER_URL
+  const password = process.env.ACTUAL_PASSWORD
+  const budgetId = process.env.ACTUAL_BUDGET_ID
+  const encryptionPassword = process.env.ACTUAL_ENCRYPTION_PASSWORD
+  const dataDir = process.env.ACTUAL_DATA_DIR || './data'
+
+  if (!apiKey) {
+    console.error('ERROR: REDBARK_API_KEY is required for --export-accounts')
+    process.exit(EXIT_CONFIG_ERROR)
+  }
+  if (!serverUrl || !password || !budgetId) {
+    console.error(
+      'ERROR: ACTUAL_SERVER_URL, ACTUAL_PASSWORD, ACTUAL_BUDGET_ID required for --export-accounts'
+    )
+    process.exit(EXIT_CONFIG_ERROR)
+  }
+
+  const client = new RedbarkClient(apiKey, apiUrl)
+  const connections = await client.listConnections()
+  const redbarkAccounts = connections.flatMap((conn) =>
+    conn.accounts.map((acc) => ({
+      id: acc.id,
+      name: acc.name,
+      institutionName: conn.institutionName,
+    }))
+  )
+
+  const actualAccountsList = await listActualAccounts({
+    serverUrl,
+    password,
+    budgetId,
+    encryptionPassword,
+    dataDir,
+  })
+  const actualAccounts = actualAccountsList
+    .filter((a) => !a.closed)
+    .map((a) => ({
+      id: a.id,
+      name: a.name,
+      offbudget: a.offbudget,
+    }))
+
+  const payload: ExportAccountsPayload = {
+    redbarkAccounts,
+    actualAccounts,
+  }
+  console.log(JSON.stringify(payload, null, 2))
+}
+
 async function main(): Promise<void> {
   const flags = parseArgs(process.argv.slice(2))
 
@@ -186,6 +250,11 @@ async function main(): Promise<void> {
 
   if (flags.listActualAccounts) {
     await handleListActualAccounts()
+    process.exit(EXIT_SUCCESS)
+  }
+
+  if (flags.exportAccounts) {
+    await handleExportAccounts()
     process.exit(EXIT_SUCCESS)
   }
 

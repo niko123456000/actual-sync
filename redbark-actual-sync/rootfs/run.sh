@@ -24,6 +24,10 @@ export ACTUAL_DATA_DIR=/data/actual-cache
 # Apply navigator polyfill before any node run (fixes @actual-app/api in Node without rebuilding base image)
 export NODE_OPTIONS="--require /polyfill-navigator.cjs ${NODE_OPTIONS:-}"
 
+# Start web UI server (ingress) in the background
+node /app/web-server.cjs &
+WEB_PID=$!
+
 # Default interval if not from options
 : "${SYNC_INTERVAL_HOURS:=6}"
 INTERVAL_SECS=$((SYNC_INTERVAL_HOURS * 3600))
