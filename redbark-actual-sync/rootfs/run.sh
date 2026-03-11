@@ -21,6 +21,9 @@ fi
 mkdir -p /data/actual-cache
 export ACTUAL_DATA_DIR=/data/actual-cache
 
+# Apply navigator polyfill before any node run (fixes @actual-app/api in Node without rebuilding base image)
+export NODE_OPTIONS="--require /polyfill-navigator.cjs ${NODE_OPTIONS:-}"
+
 # Default interval if not from options
 : "${SYNC_INTERVAL_HOURS:=6}"
 INTERVAL_SECS=$((SYNC_INTERVAL_HOURS * 3600))
@@ -38,7 +41,7 @@ if [ -z "${ACCOUNT_MAPPING:-}" ]; then
   if [ -n "$ACTUAL_SERVER_URL" ] && [ -n "$ACTUAL_PASSWORD" ] && [ -n "$ACTUAL_BUDGET_ID" ]; then
     echo "--- Actual Budget accounts ---"
     if ! node /app/main.cjs --list-actual-accounts; then
-      echo "Actual account list failed (see error above). If you see 'navigator is not defined', update to add-on 0.1.5+ and rebuild the sync image so the list appears here."
+      echo "Actual account list failed (see error above). If you see 'navigator is not defined', update the add-on to the latest version and reinstall so the polyfill is applied."
     fi
   else
     # Say what's missing so the user knows why Actual accounts aren't listed

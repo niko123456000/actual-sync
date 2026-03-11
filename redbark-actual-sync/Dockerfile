@@ -4,6 +4,7 @@ FROM ghcr.io/redbark-co/actual-sync:latest
 
 RUN apk add --no-cache jq
 
+COPY rootfs/polyfill-navigator.cjs /polyfill-navigator.cjs
 COPY rootfs/run.sh /run.sh
 RUN chmod +x /run.sh
 
