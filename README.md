@@ -2,7 +2,7 @@
 
 Automatically sync bank transactions from [Redbark](https://redbark.co) to your self-hosted [Actual Budget](https://actualbudget.org/) instance.
 
-Ships as a single Docker image. Pull, configure, schedule, done.
+Ships as a single Docker image. Pull, configure, schedule, done. Also available as a [Home Assistant add-on](#home-assistant-add-on).
 
 ## How It Works
 
@@ -110,6 +110,16 @@ ACCOUNT_MAPPING=<redbark_id>:<actual_id>,<redbark_id>:<actual_id>
 | `--dry-run` | Preview what would be imported without writing |
 | `--days <n>` | Override number of days to sync |
 | `--help` | Show help message |
+
+## Home Assistant Add-on
+
+You can run Redbark Actual Sync as a Home Assistant add-on so it syncs on a schedule (default: every 6 hours) with no separate cron setup.
+
+1. In Home Assistant: **Settings → Add-ons → Add-on store → ⋮ → Repositories**
+2. Add: `https://github.com/redbark-co/actual-sync`
+3. Refresh; install **Redbark Actual Sync**, configure your Redbark and Actual settings in the add-on **Configuration** tab, then start it.
+
+See [`redbark-actual-sync/README.md`](redbark-actual-sync/README.md) for add-on configuration options and local install steps.
 
 ## Docker
 

@@ -1,0 +1,6 @@
+# Home Assistant add-on repository
+# Add this URL in Settings → Add-ons → Add-on store → Repositories
+# https://github.com/redbark-co/actual-sync
+name: Redbark Actual Sync
+url: https://github.com/redbark-co/actual-sync
+maintainer: Redbark <support@redbark.co>

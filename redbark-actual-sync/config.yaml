@@ -1,0 +1,39 @@
+---
+# Home Assistant shows a Configuration tab for the add-on when both "options"
+# and "schema" are present. Each option below appears as a form field there.
+name: Redbark Actual Sync
+description: Sync bank transactions from Redbark to your self-hosted Actual Budget. Runs on a schedule.
+version: "0.1.0"
+slug: redbark-actual-sync
+url: https://github.com/redbark-co/actual-sync
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+init: false
+# Defaults shown in the add-on Configuration tab (Settings → Add-ons → Redbark Actual Sync → Configuration)
+options:
+  redbark_api_key: ""
+  actual_server_url: ""
+  actual_password: ""
+  actual_budget_id: ""
+  account_mapping: ""
+  sync_days: 30
+  sync_interval_hours: 6
+  log_level: info
+  actual_encryption_password: ""
+  dry_run: false
+# Schema types: str, password (masked), int, bool. Must match options keys so the form is generated.
+schema:
+  redbark_api_key: password
+  actual_server_url: str
+  actual_password: password
+  actual_budget_id: str
+  account_mapping: str
+  sync_days: int
+  sync_interval_hours: int
+  log_level: str
+  actual_encryption_password: password
+  dry_run: bool
