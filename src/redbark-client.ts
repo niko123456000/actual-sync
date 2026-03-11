@@ -39,7 +39,7 @@ export class RedbarkClient {
   constructor(apiKey: string, baseUrl: string) {
     this.apiKey = apiKey
     this.baseUrl = baseUrl.replace(/\/$/, '')
-    this.userAgent = `redbark-actual-sync/0.1.4`
+    this.userAgent = `redbark-actual-sync/0.1.6`
   }
 
   async listConnections(): Promise<RedbarkConnection[]> {

@@ -213,6 +213,8 @@ Actual Budget updates frequently and the sync protocol can break between client/
 
 ## Development
 
+**Releasing:** Bump the version in `package.json`, `redbark-actual-sync/config.yaml`, and `src/redbark-client.ts` (User-Agent) so the Home Assistant add-on store can offer updates. See [MAINTENANCE.md](MAINTENANCE.md#version-bump-required-for-add-on-store-updates).
+
 ```bash
 # Install dependencies
 pnpm install

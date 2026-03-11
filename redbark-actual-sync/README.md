@@ -4,7 +4,7 @@ Run [Redbark Actual Sync](https://github.com/redbark-co/actual-sync) as a Home A
 
 All settings (Redbark API key, Actual server URL, account mapping, etc.) are presented on the add-on’s **Configuration** tab in Home Assistant. After installing the add-on, open it and go to the **Configuration** tab to enter your values; no environment variables or YAML are required.
 
-**First-time setup:** If you add your Redbark API key (and optionally Actual server URL, password, and budget ID) but leave **Account mapping** empty, the add-on will list your Redbark and Actual account IDs in the **Log** tab when it starts. Copy those IDs into **Account mapping** as `redbark_id:actual_id` pairs (comma-separated), then restart the add-on.
+**First-time setup (no Docker needed):** If you add your Redbark API key and Actual server URL, password, and budget ID but leave **Account mapping** empty, the add-on will list your Redbark and Actual account IDs in the **Log** tab when it starts. Copy those IDs into **Account mapping** as `redbark_id:actual_id` pairs (comma-separated), then restart the add-on. If you have all three Actual fields set but only see an error under "Actual Budget accounts" (e.g. `navigator is not defined`) instead of account names, update the add-on to **0.1.5+** and ensure the sync image has been rebuilt so the list appears.
 
 ## Installation
 
@@ -57,6 +57,10 @@ The add-on keeps Actual’s local cache in its persistent storage (`/data/actual
 ## Logs
 
 Use the add-on’s **Log** tab to see sync runs and any errors.
+
+## Troubleshooting
+
+**`navigator is not defined`** — The sync app runs in Node; the Actual API expects a browser-like `navigator`. The fix is a polyfill that must run before any other code. Rebuild the **sync app image** from this repo (e.g. `docker build -t your-image .`) and reinstall/rebuild the add-on so it uses that image. Version 0.1.5+ applies the polyfill in the build banner (first line of the built file) so it always runs before any other code.
 
 ## Maintaining a fork and syncing with upstream
 

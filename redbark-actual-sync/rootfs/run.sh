@@ -37,9 +37,16 @@ if [ -z "${ACCOUNT_MAPPING:-}" ]; then
   fi
   if [ -n "$ACTUAL_SERVER_URL" ] && [ -n "$ACTUAL_PASSWORD" ] && [ -n "$ACTUAL_BUDGET_ID" ]; then
     echo "--- Actual Budget accounts ---"
-    node /app/main.cjs --list-actual-accounts || true
+    if ! node /app/main.cjs --list-actual-accounts; then
+      echo "Actual account list failed (see error above). If you see 'navigator is not defined', update to add-on 0.1.5+ and rebuild the sync image so the list appears here."
+    fi
   else
-    echo "Add Actual server URL, password, and budget ID in Configuration to list Actual account IDs."
+    # Say what's missing so the user knows why Actual accounts aren't listed
+    _missing=""
+    [ -z "$ACTUAL_SERVER_URL" ] && _missing="${_missing} server URL"
+    [ -z "$ACTUAL_PASSWORD" ] && _missing="${_missing} password"
+    [ -z "$ACTUAL_BUDGET_ID" ] && _missing="${_missing} budget ID"
+    echo "Actual accounts: add the following in Configuration to list them:${_missing}. Budget ID is in Actual under Settings → Advanced."
   fi
   echo "Copy the IDs above into Configuration → Account mapping (redbark_id:actual_id, ...), then restart the add-on."
   echo ""

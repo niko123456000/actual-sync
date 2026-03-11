@@ -8,6 +8,10 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   banner: {
-    js: '#!/usr/bin/env node',
+    // Run before any module code; @actual-app/api expects navigator (browser global)
+    js: [
+      '#!/usr/bin/env node',
+      '(function(){if(typeof globalThis.navigator==="undefined"){globalThis.navigator={userAgent:"Node"};}})();',
+    ].join('\n'),
   },
 })
