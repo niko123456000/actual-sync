@@ -1,3 +1,4 @@
+import './polyfill-node.js'
 import { logger } from './logger.js'
 import { loadConfig, ConfigError } from './config.js'
 import { RedbarkClient } from './redbark-client.js'
@@ -170,13 +171,6 @@ async function handleListActualAccounts(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  // @actual-app/api may reference browser globals; polyfill for Node/add-on
-  if (typeof globalThis.navigator === 'undefined') {
-    ;(globalThis as { navigator?: { userAgent: string } }).navigator = {
-      userAgent: 'Node',
-    }
-  }
-
   const flags = parseArgs(process.argv.slice(2))
 
   if (flags.help) {
