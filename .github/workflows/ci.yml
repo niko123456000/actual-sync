@@ -62,7 +62,8 @@ jobs:
       - uses: docker/metadata-action@v5
         id: meta
         with:
-          images: ghcr.io/redbark-co/actual-sync
+          # Push to repo owner's GHCR (e.g. ghcr.io/niko123456000/actual-sync on your fork)
+          images: ghcr.io/${{ github.repository_owner }}/actual-sync
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,prefix=sha-,format=short

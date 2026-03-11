@@ -62,6 +62,8 @@ Use the add-on’s **Log** tab to see sync runs and any errors.
 
 **`navigator is not defined`** — The add-on applies a polyfill automatically (loaded via `NODE_OPTIONS --require` before the app runs). Update to the latest add-on version and reinstall so the add-on image includes `rootfs/polyfill-navigator.cjs`; no need to rebuild the base sync image.
 
+**`Could not locate the bindings file` (better-sqlite3)** — The sync app’s base image must be built on a glibc Linux base. This repo’s **GitHub Actions** build that image on push to `main` and push to `ghcr.io/<your-username>/actual-sync:latest`. After you push, wait for the “Docker” job to finish, then reinstall/update the add-on so it uses the new image. No local Docker needed.
+
 ## Maintaining a fork and syncing with upstream
 
 If you run a fork and want to pull updates from the original [Redbark Actual Sync](https://github.com/redbark-co/actual-sync) project, see [MAINTENANCE.md](../MAINTENANCE.md) in the repo root for how to add the upstream remote and merge updates, and how to keep the add-on on the latest sync version.
