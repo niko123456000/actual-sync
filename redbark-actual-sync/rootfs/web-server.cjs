@@ -35,6 +35,14 @@ function envFromOptions(opts) {
 
 function extractJsonFromStdout(stdout) {
   const trimmed = stdout.trim();
+  // Export payload is the object with "redbarkAccounts" at top level; there may be other log lines or nested braces
+  const keyPos = trimmed.indexOf('"redbarkAccounts"');
+  if (keyPos >= 0) {
+    const start = trimmed.lastIndexOf('{', keyPos);
+    if (start >= 0) {
+      return JSON.parse(trimmed.slice(start));
+    }
+  }
   const lastBrace = trimmed.lastIndexOf('{');
   if (lastBrace >= 0) {
     return JSON.parse(trimmed.slice(lastBrace));
@@ -81,7 +89,12 @@ const server = http.createServer((req, res) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(data));
       } catch (e) {
-        send500({ error: 'Invalid export output', message: e.message });
+        console.error('[web-server] /api/accounts parse failed:', e.message, 'stdout length:', stdout.length, 'stderr:', stderr.slice(-200));
+        send500({
+          error: 'Invalid export output',
+          message: e.message,
+          details: stdout.length ? `stdout (last 400 chars): ${stdout.slice(-400)}` : (stderr || 'No stdout captured'),
+        });
       }
     });
     child.on('error', (err) => {
